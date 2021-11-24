@@ -10,10 +10,8 @@ import (
 )
 
 var (
-	//Порт запуска приложения
-	port string = "8080"
-	//Наша "база данных"
-	db []Pizza
+	port = "8080"
+	db   []Pizza
 )
 
 func init() {
@@ -40,7 +38,6 @@ func init() {
 	db = append(db, pizza1, pizza2, pizza3)
 }
 
-// Pizza Наша модель
 type Pizza struct {
 	ID       int     `json:"id"`
 	Diameter int     `json:"diameter"`
@@ -48,7 +45,7 @@ type Pizza struct {
 	Title    string  `json:"title"`
 }
 
-// FindPizzaById Вспомогательная функция для модели (модельный метод)
+// FindPizzaById Helper function for Pizza model
 func FindPizzaById(id int) (Pizza, bool) {
 	var pizza Pizza
 	var found bool
@@ -67,21 +64,19 @@ type ErrorMessage struct {
 }
 
 func GetAllPizzas(writer http.ResponseWriter, request *http.Request) {
-	//Прописывать хедеры .
 	writer.Header().Set("Content-Type", "application/json")
 	log.Println("Get infos about all pizzas in database")
-	writer.WriteHeader(200)            // StatusCode для запроса
-	json.NewEncoder(writer).Encode(db) // Сериализация + запись в writer
+	writer.WriteHeader(200)            // StatusCode for the request
+	json.NewEncoder(writer).Encode(db) // Serialization + add to writer
 }
 
 func GetPizzaById(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
-	//Считаем id из строки запроса и конвертируем его в int
-	vars := mux.Vars(request) // {"id" : "12"}
+	vars := mux.Vars(request) // {"id" : "12"} []map
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		log.Println("client trying to use invalid id param:", err)
-		msg := ErrorMessage{Message: "do not use ID not supported int casting"}
+		log.Println("Client tries to use invalid ID param:", err)
+		msg := ErrorMessage{Message: "Do not use ID which is no supported for int casting"}
 		writer.WriteHeader(400)
 		json.NewEncoder(writer).Encode(msg)
 		return
@@ -100,15 +95,10 @@ func GetPizzaById(writer http.ResponseWriter, request *http.Request) {
 
 func main() {
 	log.Println("Trying to start REST API pizza!")
-	// Инициализируем маршрутизатор
 	router := mux.NewRouter()
-	//1. Если на вход пришел запрос /pizzas
 	router.HandleFunc("/pizzas", GetAllPizzas).Methods("GET")
-	//2. Если на вход пришел запрос вида /pizza/{id}
 	router.HandleFunc("/pizza/{id}", GetPizzaById).Methods("GET")
-	log.Println("Router configured successfully! Let's go!")
+	log.Println("Router has been successfully configured! Let's go!")
+
 	log.Fatal(http.ListenAndServe(":"+port, router))
-	// if err := http.ListenAndServe(":"+port, nil); err != nil {
-	// 	log.Fatal(err)
-	// }
 }
